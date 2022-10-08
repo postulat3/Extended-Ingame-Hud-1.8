@@ -106,15 +106,24 @@ public class InGameHudMixin extends DrawableHelper {
                 this.itemRenderer.renderInGuiWithOverrides(itemStack, x + 3, y);
                 this.textRenderer.draw(itemStack.getMaxDamage() - itemStack.getDamage() + "/" + itemStack.getMaxDamage(), x + 22, y + 4, Color.WHITE.getRGB());
             }
-            if (itemStack.getItem() instanceof PotionItem) {
+            if (itemStack.getItem() instanceof PotionItem && itemStack.getMeta() != 0) {
                 int x = 5;
                 int y = 5 + 15 + (client.player.inventory.armor.length) * 16;
 
-                int stringWidth = this.textRenderer.getStringWidth(itemStack.getTooltip(client.player, false).get(1).split("7", 2)[1]);
-                fill(x, y - 3, x + 22 + stringWidth + 5, y + 19, -1873784752);
+                int stringWidth = 0;
+                int effects = 1;
+                while (effects < itemStack.getTooltip(client.player, false).size() && itemStack.getTooltip(client.player, false).get(effects).length() >= 2) {
+                    stringWidth = Math.max(this.textRenderer.getStringWidth(itemStack.getTooltip(client.player, false).get(effects).split("\\d|[a-f]", 2)[1]), stringWidth);
+                    effects++;
+                }
+
+                fill(x, y - 3, x + 22 + stringWidth + 5, y + 19 + ((effects - 2) * 22), -1873784752);
 
                 this.itemRenderer.renderInGuiWithOverrides(itemStack, x + 3, y);
-                this.textRenderer.draw(itemStack.getTooltip(client.player, false).get(1).split("7", 2)[1], x + 22, y + 4, Color.WHITE.getRGB());
+
+                for (int i = 1; i < effects; i++) {
+                    this.textRenderer.draw(itemStack.getTooltip(client.player, false).get(i).split("\\d|[a-f]", 2)[1], x + 22, y + 4 + (22 * (i - 1)), itemStack.getTooltip(client.player, false).get(i).charAt(1) == '7' ? Color.WHITE.getRGB() : 16733525);
+                }
             }
         }
     }
